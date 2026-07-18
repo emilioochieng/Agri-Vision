@@ -102,7 +102,8 @@ Example:
 ```
 screenshots/
 │
-├── homepage.png
+├── homepage.png<img width="1311" height="614" alt="Screenshot 2026-07-18 232447" src="https://github.com/user-attachments/assets/70704edb-99d8-449f-bbf9-e07ddaaf3a63" />
+
 ├── dashboard.png
 ├── login.png
 ├── farm_management.png

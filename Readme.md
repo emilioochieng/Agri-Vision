@@ -110,7 +110,8 @@ screenshots/
 
 ├── services.png<img width="1319" height="590" alt="Screenshot 2026-07-18 233414" src="https://github.com/user-attachments/assets/2d3d5a7a-1b6d-4bd6-9767-ab2051de5f0b" />
 
-└── learning hub.png<img width="1338" height="610" alt="Screenshot 2026-07-18 233038" src="https://github.com/user-attachments/assets/8a3f05d9-1758-4c1e-8269-c5ebf8df376a" />
+└── learning hub.png<img width="1256" height="596" alt="Screenshot 2026-07-18 233219" src="https://github.com/user-attachments/assets/7825d8d9-902a-4c26-b702-09b153277c3d" />
+
 
 ```
 

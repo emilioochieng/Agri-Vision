@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroVision — Farming, Guided by Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --soil:#16231A;
+    --soil-2:#1F3327;
+    --paper:#F2EEE1;
+    --paper-2:#E7E0CC;
+    --gold:#C6902F;
+    --gold-2:#E3AE4E;
+    --leaf:#3C7A54;
+    --sky:#3D6B8A;
+    --clay:#B4552F;
+    --ink:#1B1B14;
+    --line: rgba(27,27,20,0.14);
+    --line-inv: rgba(242,238,225,0.18);
+    --radius: 4px;
+    --display: 'Fraunces', serif;
+    --body: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family: var(--body);
+    background: var(--paper);
+    color: var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+
+  /* --- furrow divider signature element --- */
+  .furrow{
+    height:22px; width:100%;
+    background-image: repeating-linear-gradient(120deg, transparent 0 34px, var(--line) 34px 36px);
+    opacity:0.9;
+  }
+  .furrow.inv{background-image: repeating-linear-gradient(120deg, transparent 0 34px, var(--line-inv) 34px 36px);}
+
+  /* --- nav --- */
+  header{
+    position:sticky; top:0; z-index:100;
+    background: rgba(242,238,225,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .navbar{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:var(--display); font-weight:600; font-size:1.28rem; letter-spacing:-.01em;}
+  .brand .mark{width:26px; height:26px; flex:none;}
+  nav.links{display:flex; gap:2px; align-items:center;}
+  nav.links button{
+    padding:9px 14px; font-size:.87rem; font-weight:500; color:var(--ink);
+    border-radius:2px; opacity:.72; transition:opacity .15s, background .15s;
+  }
+  nav.links button:hover{opacity:1; background:var(--paper-2);}
+  nav.links button.active{opacity:1; color:var(--leaf); font-weight:600;}
+  .navbar .cta-group{display:flex; gap:10px; align-items:center;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 20px; font-size:.87rem; font-weight:600;
+    border-radius:2px; transition: transform .15s, background .15s, color .15s;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--leaf); color:var(--paper);}
+  .btn-primary:hover{background:#2f6444; transform:translateY(-1px);}
+  .btn-ghost{border:1px solid var(--ink); color:var(--ink);}
+  .btn-ghost:hover{background:var(--ink); color:var(--paper);}
+  .btn-gold{background:var(--gold); color:var(--soil);}
+  .btn-gold:hover{background:var(--gold-2); transform:translateY(-1px);}
+  .menu-toggle{display:none;}
+
+  section{display:none;}
+  section.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* --- hero --- */
+  .hero{
+    background: radial-gradient(ellipse at 75% 15%, #24402d 0%, var(--soil) 55%), var(--soil);
+    color:var(--paper); position:relative; overflow:hidden;
+    padding:96px 0 0;
+  }
+  .hero .wrap{position:relative; z-index:2; display:grid; grid-template-columns: 1.15fr .85fr; gap:40px; align-items:end; padding-bottom:64px;}
+  .hero .rows{
+    position:absolute; inset:0; z-index:1; opacity:.5;
+    background-image: repeating-linear-gradient(100deg, transparent 0 46px, rgba(198,144,47,0.10) 46px 48px);
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--gold-2); display:flex; align-items:center; gap:8px; margin-bottom:22px;
+  }
+  .eyebrow .dot{width:7px; height:7px; border-radius:50%; background:#7FD99A; box-shadow:0 0 0 4px rgba(127,217,154,.18); animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .hero h1{
+    font-family:var(--display); font-weight:600; font-size:clamp(2.4rem, 4.6vw, 4.1rem);
+    line-height:1.03; letter-spacing:-.02em; max-width:11.5ch; margin-bottom:22px;
+  }
+  .hero h1 em{font-style:italic; color:var(--gold-2); font-weight:500;}
+  .hero p.lead{font-size:1.08rem; max-width:46ch; color:rgba(242,238,225,.78); margin-bottom:32px;}
+  .hero .btn-row{display:flex; gap:12px; flex-wrap:wrap;}
+  .readout-panel{
+    background:rgba(242,238,225,0.05); border:1px solid var(--line-inv); border-radius:var(--radius);
+    padding:22px; backdrop-filter: blur(2px);
+  }
+  .readout-panel h3{font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:rgba(242,238,225,.55); margin-bottom:16px; display:flex; justify-content:space-between;}
+  .readout-row{display:flex; justify-content:space-between; align-items:baseline; padding:11px 0; border-top:1px solid var(--line-inv);}
+  .readout-row:first-of-type{border-top:none;}
+  .readout-label{font-size:.83rem; color:rgba(242,238,225,.7);}
+  .readout-value{font-family:var(--mono); font-size:1.05rem; font-weight:600; color:var(--gold-2);}
+  .readout-value.up::after{content:' ▲'; font-size:.7em; color:#7FD99A;}
+  .readout-value.down::after{content:' ▼'; font-size:.7em; color:#E28C6B;}
+  .hero-strip{display:flex; gap:0; border-top:1px solid var(--line-inv); position:relative; z-index:2;}
+  .hero-strip div{flex:1; padding:20px 28px; border-right:1px solid var(--line-inv);}
+  .hero-strip div:last-child{border-right:none;}
+  .hero-strip .num{font-family:var(--mono); font-size:1.5rem; font-weight:600; color:var(--paper);}
+  .hero-strip .lbl{font-size:.76rem; color:rgba(242,238,225,.55); margin-top:2px;}
+
+  /* --- generic section chrome --- */
+  .section{padding:88px 0;}
+  .section-head{max-width:640px; margin-bottom:48px;}
+  .section-head .eyebrow{color:var(--leaf);}
+  .section-head h2{font-family:var(--display); font-weight:600; font-size:clamp(1.9rem,3vw,2.6rem); letter-spacing:-.02em; margin-bottom:14px;}
+  .section-head p{color:#4a4a3d; font-size:1.02rem; max-width:56ch;}
+  .section.tint{background:var(--paper-2);}
+  .section.dark{background:var(--soil); color:var(--paper);}
+  .section.dark .section-head p{color:rgba(242,238,225,.7);}
+  .section.dark .section-head .eyebrow{color:var(--gold-2);}
+
+  /* --- about --- */
+  .about-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start;}
+  .about-grid p{margin-bottom:16px; color:#3a3a2e; font-size:1rem;}
+  .pillars{display:flex; flex-direction:column; gap:0;}
+  .pillar{display:flex; gap:18px; padding:22px 0; border-top:1px solid var(--line);}
+  .pillar:first-child{border-top:none;}
+  .pillar .glyph{font-family:var(--mono); font-size:.75rem; color:var(--leaf); padding-top:3px; width:34px; flex:none;}
+  .pillar h4{font-family:var(--display); font-size:1.08rem; font-weight:600; margin-bottom:4px;}
+  .pillar p{color:#4a4a3d; font-size:.92rem;}
+
+  /* --- services --- */
+  .svc-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);}
+  .svc-card{background:var(--paper); padding:30px 26px; transition:background .15s;}
+  .svc-card:hover{background:var(--paper-2);}
+  .svc-card .ic{font-size:1.5rem; margin-bottom:16px;}
+  .svc-card h4{font-family:var(--display); font-size:1.05rem; font-weight:600; margin-bottom:8px;}
+  .svc-card p{font-size:.87rem; color:#4a4a3d;}
+
+  /* --- dashboard --- */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-inv); margin-bottom:1px;}
+  .kpi{background:var(--soil-2); padding:24px 26px;}
+  .kpi .lbl{font-size:.78rem; color:rgba(242,238,225,.55); margin-bottom:10px;}
+  .kpi .val{font-family:var(--mono); font-size:1.7rem; font-weight:600;}
+  .kpi .delta{font-family:var(--mono); font-size:.76rem; margin-top:6px;}
+  .delta.pos{color:#7FD99A;} .delta.neg{color:#E28C6B;}
+  .chart-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:1px; background:var(--line-inv);}
+  .chart-card{background:var(--soil-2); padding:26px;}
+  .chart-card h4{font-size:.85rem; font-weight:600; margin-bottom:18px; color:rgba(242,238,225,.85);}
+  .chart-card canvas{max-height:260px;}
+  .alerts-row{display:grid; grid-template-columns:1fr; gap:1px; background:var(--line-inv); margin-top:1px;}
+  .alert-item{background:var(--soil-2); padding:16px 26px; display:flex; gap:14px; align-items:center; font-size:.86rem;}
+  .alert-item .badge{font-family:var(--mono); font-size:.66rem; padding:3px 8px; border-radius:2px; text-transform:uppercase; flex:none;}
+  .badge.warn{background:rgba(227,174,78,.18); color:var(--gold-2);}
+  .badge.info{background:rgba(61,107,138,.25); color:#7FB6D9;}
+  .badge.crit{background:rgba(226,140,107,.2); color:#E28C6B;}
+
+  /* --- weather --- */
+  .weather-top{display:grid; grid-template-columns:.9fr 1.5fr; gap:1px; background:var(--line); margin-bottom:1px;}
+  .weather-now{background:var(--soil); color:var(--paper); padding:34px; }
+  .weather-now .temp{font-family:var(--mono); font-size:3.4rem; font-weight:600;}
+  .weather-now .cond{font-size:1rem; color:rgba(242,238,225,.7); margin-bottom:20px;}
+  .wmetrics{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .wmetrics div{font-size:.8rem; color:rgba(242,238,225,.6);}
+  .wmetrics b{display:block; font-family:var(--mono); color:var(--paper); font-size:1rem; margin-top:2px;}
+  .advice-box{background:var(--paper-2); padding:34px; display:flex; flex-direction:column; justify-content:center;}
+  .advice-box .eyebrow{color:var(--leaf); margin-bottom:12px;}
+  .advice-box p{font-size:.95rem; color:#3a3a2e;}
+  .forecast-strip{display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--line);}
+  .fday{background:var(--paper); padding:20px 14px; text-align:center;}
+  .fday .d{font-size:.76rem; color:#6a6a58; margin-bottom:10px;}
+  .fday .ic{font-size:1.3rem; margin-bottom:10px;}
+  .fday .hi{font-family:var(--mono); font-weight:600;}
+  .fday .lo{font-family:var(--mono); font-size:.82rem; color:#6a6a58;}
+
+  /* --- marketplace --- */
+  .filter-row{display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap;}
+  .chip{padding:8px 16px; font-size:.82rem; border:1px solid var(--line); border-radius:20px; font-weight:500;}
+  .chip.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .market-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line);}
+  .mcard{background:var(--paper); padding:0 0 22px;}
+  .mcard .mimg{height:130px; background:linear-gradient(135deg,var(--paper-2),var(--gold) 180%); display:flex; align-items:center; justify-content:center; font-size:2.2rem;}
+  .mcard .mbody{padding:20px 22px 0;}
+  .mcard .tag{font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:var(--leaf); letter-spacing:.06em;}
+  .mcard h4{font-family:var(--display); font-size:1.05rem; font-weight:600; margin:8px 0 6px;}
+  .mcard .meta{font-size:.82rem; color:#6a6a58; margin-bottom:14px;}
+  .mcard .price-row{display:flex; justify-content:space-between; align-items:center;}
+  .mcard .price{font-family:var(--mono); font-weight:600; font-size:1.05rem;}
+
+  /* --- learning hub / blog --- */
+  .blog-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:36px;}
+  .post{border-top:1px solid var(--line); padding-top:18px;}
+  .post .tag{font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:var(--clay); letter-spacing:.06em;}
+  .post h4{font-family:var(--display); font-weight:600; font-size:1.15rem; margin:10px 0 10px; line-height:1.25;}
+  .post p{font-size:.88rem; color:#4a4a3d; margin-bottom:14px;}
+  .post .read{font-size:.82rem; font-weight:600; color:var(--leaf);}
+
+  /* --- contact --- */
+  .contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line);}
+  .contact-form, .contact-info{background:var(--paper); padding:40px;}
+  .contact-info{background:var(--soil-2); color:var(--paper);}
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:.78rem; font-weight:600; margin-bottom:7px;}
+  .field input, .field textarea{
+    width:100%; padding:12px 14px; border:1px solid var(--line); background:var(--paper); font-family:inherit; font-size:.92rem; border-radius:2px;
+  }
+  .field textarea{resize:vertical; min-height:110px;}
+  .info-row{padding:16px 0; border-top:1px solid var(--line-inv); font-size:.9rem;}
+  .info-row:first-child{border-top:none;}
+  .info-row .lbl{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(242,238,225,.5); margin-bottom:4px;}
+
+  footer{background:var(--soil); color:rgba(242,238,225,.6); padding:48px 0 28px; font-size:.85rem;}
+  footer .wrap{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+  footer .fbrand{font-family:var(--display); color:var(--paper); font-size:1.05rem; font-weight:600; margin-bottom:6px;}
+  footer .flinks{display:flex; gap:22px;}
+
+  /* --- modal --- */
+  .modal-veil{position:fixed; inset:0; background:rgba(22,35,26,.55); backdrop-filter:blur(2px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px;}
+  .modal-veil.open{display:flex;}
+  .modal{background:var(--paper); width:100%; max-width:400px; border-radius:4px; padding:36px; position:relative;}
+  .modal .close{position:absolute; top:16px; right:18px; font-size:1.3rem; opacity:.5;}
+  .modal h3{font-family:var(--display); font-size:1.4rem; font-weight:600; margin-bottom:6px;}
+  .modal p.sub{font-size:.85rem; color:#6a6a58; margin-bottom:24px;}
+  .modal-tabs{display:flex; gap:0; margin-bottom:24px; border-bottom:1px solid var(--line);}
+  .modal-tabs button{flex:1; padding:10px 0; font-size:.85rem; font-weight:600; opacity:.4; border-bottom:2px solid transparent;}
+  .modal-tabs button.active{opacity:1; border-color:var(--leaf); color:var(--leaf);}
+  .modal-note{font-size:.76rem; color:#8a8a78; margin-top:16px; line-height:1.5;}
+  .toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); padding:14px 22px; border-radius:3px; font-size:.87rem; opacity:0; transition:all .3s; z-index:300; pointer-events:none;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width: 900px){
+    nav.links{display:none;}
+    .hero .wrap{grid-template-columns:1fr;}
+    .hero-strip{flex-wrap:wrap;}
+    .hero-strip div{flex:1 1 50%; border-bottom:1px solid var(--line-inv);}
+    .about-grid, .weather-top, .contact-grid{grid-template-columns:1fr;}
+    .svc-grid{grid-template-columns:repeat(2,1fr);}
+    .chart-grid, .market-grid, .blog-grid, .kpi-grid{grid-template-columns:1fr;}
+    .forecast-strip{grid-template-columns:repeat(4,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="navbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 26 26"><path d="M13 2 C13 2 4 8 4 15 C4 20.5 8.2 24 13 24 C17.8 24 22 20.5 22 15 C22 8 13 2 13 2 Z" fill="#3C7A54"/><path d="M13 7 L13 21" stroke="#F2EEE1" stroke-width="1.4"/><path d="M13 11 L9 8.5 M13 15 L17.2 12 M13 19 L9.4 16.5" stroke="#F2EEE1" stroke-width="1.2"/></svg>
+      AgroVision
+    </div>
+    <nav class="links" id="navLinks">
+      <button data-target="home" class="active">Home</button>
+      <button data-target="about">About</button>
+      <button data-target="services">Services</button>
+      <button data-target="dashboard">Dashboard</button>
+      <button data-target="marketplace">Marketplace</button>
+      <button data-target="weather">Weather</button>
+      <button data-target="learning">Learning Hub</button>
+      <button data-target="contact">Contact</button>
+    </nav>
+    <div class="cta-group">
+      <button class="btn btn-ghost" id="loginBtn">Log in</button>
+      <button class="btn btn-primary" id="registerBtn">Get started</button>
+    </div>
+  </div>
+</header>
+
+<!-- HOME -->
+<section id="home" class="active">
+  <div class="hero">
+    <div class="rows"></div>
+    <div class="wrap">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> Live across 412 farms in Kenya</div>
+        <h1>Empowering farmers through <em>data</em>, technology &amp; innovation.</h1>
+        <p class="lead">AgroVision turns soil readings, weather patterns and market signals into decisions you can act on before sunrise — built for smallholders and agronomists across Africa.</p>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="goTo('dashboard')">Get started</button>
+          <button class="btn btn-ghost" onclick="goTo('services')" style="border-color:var(--line-inv); color:var(--paper);">Explore services</button>
+          <button class="btn btn-ghost" onclick="goTo('contact')" style="border-color:var(--line-inv); color:var(--paper);">Contact us</button>
+        </div>
+      </div>
+      <div class="readout-panel">
+        <h3>Field readout <span>Kisumu County</span></h3>
+        <div class="readout-row"><span class="readout-label">Soil moisture</span><span class="readout-value up">38%</span></div>
+        <div class="readout-row"><span class="readout-label">Maize spot price</span><span class="readout-value up">KES 52/kg</span></div>
+        <div class="readout-row"><span class="readout-label">Rain probability, 48h</span><span class="readout-value down">12%</span></div>
+        <div class="readout-row"><span class="readout-label">Pest risk index</span><span class="readout-value">Low</span></div>
+      </div>
+    </div>
+    <div class="hero-strip">
+      <div><div class="num">412</div><div class="lbl">Farms onboarded</div></div>
+      <div><div class="num">18.4k</div><div class="lbl">Hectares tracked</div></div>
+      <div><div class="num">96%</div><div class="lbl">Forecast accuracy</div></div>
+      <div><div class="num">24/7</div><div class="lbl">Field alerts</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Why AgroVision</div>
+        <h2>One platform, from the soil to the sale.</h2>
+        <p>Most farmers juggle a notebook, a WhatsApp group and a hunch about the weather. AgroVision replaces the guesswork with a single dashboard for every stage of the season.</p>
+      </div>
+      <div class="pillars" style="max-width:800px;">
+        <div class="pillar"><div class="glyph">01</div><div><h4>Know your field</h4><p>Soil, moisture and crop health data collected and visualized automatically.</p></div></div>
+        <div class="pillar"><div class="glyph">02</div><div><h4>Plan around the weather</h4><p>7-day forecasts translated into plain farming advice, not just numbers.</p></div></div>
+        <div class="pillar"><div class="glyph">03</div><div><h4>Sell at the right price</h4><p>Live market data connects your harvest directly to buyers.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="furrow"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">About AgroVision</div>
+        <h2>Farming has always run on data. We just make it visible.</h2>
+      </div>
+      <div class="about-grid">
+        <div>
+          <p><b>What AgriTech is.</b> AgriTech is the application of data analytics, GIS, IoT, AI and cloud technology to agriculture — turning field conditions into information farmers can act on in time to matter.</p>
+          <p><b>Why we exist.</b> Smallholder farmers produce most of Africa's food but have the least access to the data that governs their industry: weather, soil, and price. AgroVision closes that gap.</p>
+          <p><b>Our story.</b> This platform began as a portfolio project exploring how data engineering, Power BI and modern web tools could solve a real agricultural problem — and grew into a working model for what farm-level data infrastructure could look like at scale.</p>
+        </div>
+        <div class="pillars">
+          <div class="pillar"><div class="glyph">MSN</div><div><h4>Mission</h4><p>Give every farmer, regardless of farm size, the same quality of data available to large agribusiness.</p></div></div>
+          <div class="pillar"><div class="glyph">VIS</div><div><h4>Vision</h4><p>A continent where farming decisions are informed by data as often as they are by experience.</p></div></div>
+          <div class="pillar"><div class="glyph">HOW</div><div><h4>How</h4><p>We leverage data analytics, GIS, IoT, AI and cloud technologies to improve agricultural productivity and sustainability across Africa.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="furrow"></div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Services</div>
+        <h2>Eight tools. One decision, every morning: what does the field need today?</h2>
+      </div>
+    </div>
+    <div class="svc-grid">
+      <div class="svc-card"><div class="ic">🌱</div><h4>Soil Analysis</h4><p>Track pH, nutrients and moisture by plot, with recommendations per crop.</p></div>
+      <div class="svc-card"><div class="ic">🌦</div><h4>Weather Forecasting</h4><p>7-day localized forecasts translated into planting and spraying advice.</p></div>
+      <div class="svc-card"><div class="ic">📊</div><h4>Farm Data Analytics</h4><p>Yield, revenue and cost trends visualized in real time.</p></div>
+      <div class="svc-card"><div class="ic">🚜</div><h4>Farm Management</h4><p>Register plots, log activities and manage workers from one place.</p></div>
+      <div class="svc-card"><div class="ic">💰</div><h4>Market Price Analysis</h4><p>Live crop prices across regional markets, updated daily.</p></div>
+      <div class="svc-card"><div class="ic">🌾</div><h4>Crop Monitoring</h4><p>Growth stage tracking and early disease detection alerts.</p></div>
+      <div class="svc-card"><div class="ic">🐄</div><h4>Livestock Tracking</h4><p>Herd health, feeding schedules and production records.</p></div>
+      <div class="svc-card"><div class="ic">📍</div><h4>GIS Mapping</h4><p>Satellite-based field boundaries and land-use visualization.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+  <div class="section dark" style="padding-bottom:0;">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Smart Dashboard</div>
+        <h2>Every farm, one screen.</h2>
+        <p>A live view of production, revenue and risk — the same dashboard an agronomist or admin sees when reviewing a region.</p>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">Total production</div><div class="val">1,284 t</div><div class="delta pos">▲ 6.2% vs last season</div></div>
+      <div class="kpi"><div class="lbl">Revenue (MTD)</div><div class="val">KES 9.1M</div><div class="delta pos">▲ 3.4%</div></div>
+      <div class="kpi"><div class="lbl">Avg. crop yield</div><div class="val">4.6 t/ha</div><div class="delta neg">▼ 0.8%</div></div>
+      <div class="kpi"><div class="lbl">Active disease alerts</div><div class="val">3</div><div class="delta neg">▲ new today</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card"><h4>Yield &amp; revenue trend — last 6 months</h4><canvas id="lineChart"></canvas></div>
+      <div class="chart-card"><h4>Crop distribution by hectare</h4><canvas id="pieChart"></canvas></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card" style="grid-column:1/-1;"><h4>Farm revenue by region</h4><canvas id="barChart" style="max-height:220px;"></canvas></div>
+    </div>
+    <div class="alerts-row">
+      <div class="alert-item"><span class="badge warn">Disease</span> Early blight detected on 2 plots — Uasin Gishu block C</div>
+      <div class="alert-item"><span class="badge info">Weather</span> Rainfall expected in 36 hours — delay fertilizer application</div>
+      <div class="alert-item"><span class="badge crit">Stock</span> Fertilizer inventory below reorder threshold at 3 farms</div>
+    </div>
+  </div>
+</section>
+
+<!-- WEATHER -->
+<section id="weather">
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Weather</div>
+        <h2>Know what the sky is planning before it does.</h2>
+      </div>
+    </div>
+    <div class="weather-top">
+      <div class="weather-now">
+        <div class="cond">Kisumu County · Partly cloudy</div>
+        <div class="temp">24°</div>
+        <div class="wmetrics">
+          <div>Rainfall<b>2.4 mm</b></div>
+          <div>Humidity<b>61%</b></div>
+          <div>Wind speed<b>14 km/h</b></div>
+          <div>UV index<b>6 · High</b></div>
+        </div>
+      </div>
+      <div class="advice-box">
+        <div class="eyebrow">Farming advice</div>
+        <p>Light rain expected Thursday and Friday — hold off on fertilizer application until Saturday to avoid runoff. Conditions favor transplanting through midweek; wind stays under 20 km/h all week, safe for spraying before Wednesday.</p>
+      </div>
+    </div>
+    <div class="furrow"></div>
+    <div style="padding-top:32px;">
+      <div class="forecast-strip" id="forecastStrip"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETPLACE -->
+<section id="marketplace">
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Marketplace</div>
+        <h2>Sell your harvest. Source your inputs.</h2>
+      </div>
+      <div class="filter-row">
+        <div class="chip active">All</div>
+        <div class="chip">Crops for sale</div>
+        <div class="chip">Seeds</div>
+        <div class="chip">Fertilizer</div>
+        <div class="chip">Equipment</div>
+      </div>
+    </div>
+    <div class="market-grid">
+      <div class="mcard"><div class="mimg">🌽</div><div class="mbody"><div class="tag">Crop for sale</div><h4>Grade 1 Maize, 40 bags</h4><div class="meta">Kitale · Listed by K. Wanjiru</div><div class="price-row"><span class="price">KES 52/kg</span><button class="btn btn-ghost" style="padding:7px 14px; font-size:.78rem;">Contact seller</button></div></div></div>
+      <div class="mcard"><div class="mimg">🌱</div><div class="mbody"><div class="tag">Seeds</div><h4>Hybrid Maize Seed, H614</h4><div class="meta">Eldoret Agrovet Co-op</div><div class="price-row"><span class="price">KES 950/2kg</span><button class="btn btn-ghost" style="padding:7px 14px; font-size:.78rem;">View listing</button></div></div></div>
+      <div class="mcard"><div class="mimg">🧪</div><div class="mbody"><div class="tag">Fertilizer</div><h4>DAP Fertilizer, 50kg bag</h4><div class="meta">Nakuru Farm Supplies</div><div class="price-row"><span class="price">KES 4,200</span><button class="btn btn-ghost" style="padding:7px 14px; font-size:.78rem;">View listing</button></div></div></div>
+      <div class="mcard"><div class="mimg">🚜</div><div class="mbody"><div class="tag">Equipment</div><h4>Tractor rental, 2-day minimum</h4><div class="meta">Rift Valley Machinery Pool</div><div class="price-row"><span class="price">KES 6,500/day</span><button class="btn btn-ghost" style="padding:7px 14px; font-size:.78rem;">Book now</button></div></div></div>
+      <div class="mcard"><div class="mimg">🐄</div><div class="mbody"><div class="tag">Crop for sale</div><h4>Fresh milk, daily supply contract</h4><div class="meta">Molo Dairy Cooperative</div><div class="price-row"><span class="price">KES 48/litre</span><button class="btn btn-ghost" style="padding:7px 14px; font-size:.78rem;">Contact seller</button></div></div></div>
+      <div class="mcard"><div class="mimg">🫘</div><div class="mbody"><div class="tag">Crop for sale</div><h4>Rosecoco Beans, 25 bags</h4><div class="meta">Nyandarua · Listed by P. Mwangi</div><div class="price-row"><span class="price">KES 110/kg</span><button class="btn btn-ghost" style="padding:7px 14px; font-size:.78rem;">Contact seller</button></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LEARNING HUB / BLOG -->
+<section id="learning">
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Learning Hub &amp; Blog</div>
+        <h2>Field knowledge, written down.</h2>
+      </div>
+      <div class="blog-grid">
+        <div class="post"><div class="tag">Data Analytics</div><h4>How Data Analytics Improves Farming</h4><p>From yield tracking to cost analysis, how basic dashboards change day-to-day decisions on a farm.</p><span class="read">Read article →</span></div>
+        <div class="post"><div class="tag">Power BI</div><h4>Power BI for Agriculture</h4><p>Building a farm reporting dashboard: production, revenue, and seasonal comparisons in one report.</p><span class="read">Read article →</span></div>
+        <div class="post"><div class="tag">Precision Ag</div><h4>Precision Agriculture, Explained</h4><p>What "precision farming" actually means once you strip away the buzzwords.</p><span class="read">Read article →</span></div>
+        <div class="post"><div class="tag">AI</div><h4>AI in Agriculture</h4><p>Where machine learning genuinely helps smallholder farms today — and where it's still hype.</p><span class="read">Read article →</span></div>
+        <div class="post"><div class="tag">Databases</div><h4>PostgreSQL for Farm Data</h4><p>A schema for tracking farms, crops, harvests and expenses — designed for growth.</p><span class="read">Read article →</span></div>
+        <div class="post"><div class="tag">Operations</div><h4>Farm Record Keeping That Actually Works</h4><p>A simple system for tracking income and expenses that survives a busy planting season.</p><span class="read">Read article →</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section" style="padding-bottom:0;">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Contact</div>
+        <h2>Tell us about your farm, or your feedback.</h2>
+      </div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-form">
+        <form id="contactForm">
+          <div class="field"><label>Name</label><input type="text" required placeholder="Your full name"></div>
+          <div class="field"><label>Email</label><input type="email" required placeholder="you@example.com"></div>
+          <div class="field"><label>Message</label><textarea required placeholder="How can we help?"></textarea></div>
+          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Send message</button>
+        </form>
+      </div>
+      <div class="contact-info">
+        <div class="info-row"><div class="lbl">Email</div>emilioochieng44@gmail.com</div>
+        <div class="info-row"><div class="lbl">Phone</div>+254 748973405</div>
+        <div class="info-row"><div class="lbl">WhatsApp</div>+254 705216347</div>
+        <div class="info-row"><div class="lbl">LinkedIn</div>linkedin.com/in/emilio-ochieng-3b11b73ab</div>
+        <div class="info-row"><div class="lbl">GitHub</div>https://github.com/emilioochieng</div>
+        <div class="info-row"><div class="lbl">Location</div>Nairobi, Kenya</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="fbrand">AgroVision</div>
+      <div>Where Agriculture Meets Technology.</div>
+    </div>
+    <div class="flinks">
+      <a href="#" onclick="goTo('about');return false;">About</a>
+      <a href="#" onclick="goTo('services');return false;">Services</a>
+      <a href="#" onclick="goTo('contact');return false;">Contact</a>
+      <a href="#" onclick="goTo('dashboard');return false;">Dashboard</a>
+    </div>
+    <div>© 2026 AgroVision. Portfolio project.</div>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-veil" id="authModal">
+  <div class="modal">
+    <button class="close" id="closeModal">✕</button>
+    <div class="modal-tabs">
+      <button class="active" data-tab="login">Log in</button>
+      <button data-tab="register">Register</button>
+    </div>
+    <div id="loginTab">
+      <h3>Welcome back</h3>
+      <p class="sub">Log in to view your farm dashboard.</p>
+      <form id="loginForm">
+        <div class="field"><label>Email</label><input type="email" required placeholder="you@example.com"></div>
+        <div class="field"><label>Password</label><input type="password" required placeholder="••••••••"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Log in</button>
+      </form>
+    </div>
+    <div id="registerTab" style="display:none;">
+      <h3>Create your account</h3>
+      <p class="sub">Set up your farm profile in a couple of minutes.</p>
+      <form id="registerForm">
+        <div class="field"><label>Full name</label><input type="text" required placeholder="Your full name"></div>
+        <div class="field"><label>Email</label><input type="email" required placeholder="you@example.com"></div>
+        <div class="field"><label>Password</label><input type="password" required placeholder="••••••••"></div>
+        <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center;">Create account</button>
+      </form>
+    </div>
+    <p class="modal-note">This is a front-end preview — forms aren't connected to a live account system yet. Wire this up to your backend (Django/Node) and PostgreSQL database in Phase 2.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // --- navigation ---
+  const sections = document.querySelectorAll('section');
+  const navButtons = document.querySelectorAll('nav.links button');
+  function goTo(id){
+    sections.forEach(s => s.classList.toggle('active', s.id === id));
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  navButtons.forEach(b => b.addEventListener('click', () => goTo(b.dataset.target)));
+
+  // --- toast ---
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+
+  // --- forms (front-end only) ---
+  document.getElementById('contactForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    showToast('Message sent — we\'ll get back to you soon.');
+    e.target.reset();
+  });
+  document.getElementById('loginForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    showToast('Login preview only — connect a backend to activate.');
+    closeAuth();
+  });
+  document.getElementById('registerForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    showToast('Account preview created — connect a backend to activate.');
+    closeAuth();
+  });
+
+  // --- auth modal ---
+  const authModal = document.getElementById('authModal');
+  function openAuth(tab){
+    authModal.classList.add('open');
+    setAuthTab(tab);
+  }
+  function closeAuth(){ authModal.classList.remove('open'); }
+  function setAuthTab(tab){
+    document.querySelectorAll('.modal-tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    document.getElementById('loginTab').style.display = tab==='login' ? 'block':'none';
+    document.getElementById('registerTab').style.display = tab==='register' ? 'block':'none';
+  }
+  document.getElementById('loginBtn').addEventListener('click', ()=>openAuth('login'));
+  document.getElementById('registerBtn').addEventListener('click', ()=>openAuth('register'));
+  document.getElementById('closeModal').addEventListener('click', closeAuth);
+  authModal.addEventListener('click', e=>{ if(e.target===authModal) closeAuth(); });
+  document.querySelectorAll('.modal-tabs button').forEach(b=>b.addEventListener('click',()=>setAuthTab(b.dataset.tab)));
+
+  // --- marketplace filter chips ---
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+    });
+  });
+
+  // --- weather forecast strip ---
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const icons = ['☀️','⛅','🌦','🌧','⛅','☀️','🌤'];
+  const his = [26,25,23,22,24,27,26];
+  const los = [15,14,15,16,14,15,16];
+  document.getElementById('forecastStrip').innerHTML = days.map((d,i)=>`
+    <div class="fday"><div class="d">${d}</div><div class="ic">${icons[i]}</div><div class="hi">${his[i]}°</div><div class="lo">${los[i]}°</div></div>
+  `).join('');
+
+  // --- charts ---
+  const paper = '#F2EEE1', gold='#E3AE4E', leaf='#7FD99A', sky='#7FB6D9', clay='#E28C6B', gridColor='rgba(242,238,225,0.1)';
+  Chart.defaults.color = 'rgba(242,238,225,0.65)';
+  Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+  Chart.defaults.font.size = 11;
+
+  new Chart(document.getElementById('lineChart'), {
+    type:'line',
+    data:{
+      labels:['Feb','Mar','Apr','May','Jun','Jul'],
+      datasets:[
+        {label:'Yield (t)', data:[180,195,170,210,230,214], borderColor:gold, backgroundColor:'rgba(227,174,78,0.12)', tension:.35, fill:true},
+        {label:'Revenue (KES M)', data:[6.1,6.8,6.0,7.4,8.5,9.1], borderColor:leaf, backgroundColor:'rgba(127,217,154,0.1)', tension:.35, fill:true, yAxisID:'y1'}
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{mode:'index', intersect:false},
+      scales:{
+        x:{grid:{color:gridColor}},
+        y:{grid:{color:gridColor}, title:{display:true, text:'Tonnes'}},
+        y1:{position:'right', grid:{display:false}, title:{display:true, text:'KES M'}}
+      },
+      plugins:{legend:{position:'bottom'}}
+    }
+  });
+
+  new Chart(document.getElementById('pieChart'), {
+    type:'doughnut',
+    data:{
+      labels:['Maize','Beans','Potatoes','Dairy','Other'],
+      datasets:[{data:[38,18,16,14,14], backgroundColor:[gold, leaf, sky, clay, '#8a7f5f'], borderColor:'#1F3327', borderWidth:2}]
+    },
+    options:{responsive:true, plugins:{legend:{position:'bottom'}}}
+  });
+
+  new Chart(document.getElementById('barChart'), {
+    type:'bar',
+    data:{
+      labels:['Nakuru','Uasin Gishu','Kitale','Nyandarua','Molo','Eldoret'],
+      datasets:[{label:'Revenue (KES M)', data:[2.4,1.9,1.6,1.2,1.1,0.9], backgroundColor:gold, borderRadius:2}]
+    },
+    options:{
+      responsive:true,
+      scales:{x:{grid:{display:false}}, y:{grid:{color:gridColor}}},
+      plugins:{legend:{display:false}}
+    }
+  });
+</script>
+</body>
+</html>

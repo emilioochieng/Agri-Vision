@@ -104,10 +104,14 @@ screenshots/
 │
 ├── homepage.png<img width="1311" height="614" alt="Screenshot 2026-07-18 232447" src="https://github.com/user-attachments/assets/70704edb-99d8-449f-bbf9-e07ddaaf3a63" />
 
-├── dashboard.png
-├── login.png
-├── farm_management.png
-└── analytics.png
+├── weather.png<img width="1338" height="610" alt="Screenshot 2026-07-18 233038" src="https://github.com/user-attachments/assets/8e30d7d9-3921-474f-8b21-bc0723b246a6" />
+
+├── contact.png<img width="1282" height="624" alt="Screenshot 2026-07-18 232853" src="https://github.com/user-attachments/assets/b1ae8dd8-c681-4b16-a3ef-e62a64c36ba3" />
+
+├── services.png<img width="1319" height="590" alt="Screenshot 2026-07-18 233414" src="https://github.com/user-attachments/assets/2d3d5a7a-1b6d-4bd6-9767-ab2051de5f0b" />
+
+└── learning hub.png<img width="1338" height="610" alt="Screenshot 2026-07-18 233038" src="https://github.com/user-attachments/assets/8a3f05d9-1758-4c1e-8269-c5ebf8df376a" />
+
 ```
 
 ---

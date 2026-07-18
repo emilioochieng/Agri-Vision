@@ -1,62 +1,161 @@
-Farm registration, crop management, harvest records, and expense/income
-tracking, with JWT auth. Built and tested with Flask + SQLite for local
-development; `schema.sql` is the PostgreSQL schema for when you deploy.
+#  AgriVision
 
-## Run it locally
+**Empowering Agriculture Through Data & Innovation**
 
-```bash
-pip install flask pyjwt
-python app.py
+AgriVision is a modern AgriTech web application designed to bridge the gap between agriculture and technology. The platform leverages data analytics, smart farm management, and digital tools to help farmers make informed decisions, improve productivity, and promote sustainable farming practices.
+
+---
+
+## Overview
+
+Agriculture is evolving through technology. AgriVision provides farmers, agribusinesses, and agricultural professionals with a centralized platform for managing farm activities, analyzing agricultural data, and accessing valuable farming insights.
+
+The project demonstrates the application of software engineering, database management, and data analytics in solving real-world agricultural challenges.
+
+---
+
+## ✨ Features
+
+- 🌾 Farm Registration and Management
+- 🌱 Crop Management
+- 📊 Interactive Dashboard
+- 📈 Farm Data Analytics
+- 🌦 Weather Information Integration
+- 🛒 Agricultural Marketplace
+- 📚 Learning Hub for Farmers
+- 📰 Agricultural News & Blog
+- 👤 User Authentication
+- 📞 Contact & Support
+- 📍 Location Mapping (Future Enhancement)
+- 🤖 AI-powered Agricultural Assistant (Future Enhancement)
+
+---
+
+## 🛠 Technologies Used
+
+### Frontend
+- HTML5
+- CSS3
+- JavaScript
+
+### Backend
+- Python
+- Flask (Planned)
+
+### Database
+- PostgreSQL
+
+### Data Analytics
+- SQL
+- Power BI
+
+### Version Control
+- Git
+- GitHub
+
+---
+
+## 📂 Project Structure
+
+```
+AgriVision/
+│
+├── README.md
+├── vision.html
+├── app.py
+├── database.py
+
+## 🎯 Project Objectives
+
+The main goal of AgriVision is to:
+
+- Improve agricultural productivity through technology.
+- Enable data-driven decision-making.
+- Promote sustainable farming practices.
+- Connect farmers with markets and agricultural resources.
+- Demonstrate the practical application of data analytics in agriculture.
+
+---
+
+## 🚀 Future Enhancements
+
+The project is continuously evolving. Planned features include:
+
+- AI Crop Disease Detection
+- IoT Farm Monitoring
+- Mobile Application
+- GIS Farm Mapping
+- Weather Prediction
+- Market Price Prediction
+- SMS Notifications
+- Drone & Satellite Data Integration
+- Machine Learning Models for Yield Prediction
+
+---
+
+## 📸 Screenshots
+
+Screenshots of the application will be added as development progresses.
+
+Example:
+
+```
+screenshots/
+│
+├── homepage.png
+├── dashboard.png
+├── login.png
+├── farm_management.png
+└── analytics.png
 ```
 
-Serves on `http://localhost:5000`. First run creates `agrovision.db`
-(SQLite) automatically from the schema in `database.py`.
+---
 
-## Try it
+## 📊 Skills Demonstrated
 
-```bash
-# Register
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Jane Wanjiru","email":"jane@example.com","password":"secret123"}'
+This project showcases skills in:
 
-# Use the returned token for everything else
-curl http://localhost:5000/api/farms -H "Authorization: Bearer <token>"
-```
+- Software Engineering
+- Web Development
+- Database Design
+- SQL
+- PostgreSQL
+- Python Programming
+- Data Analytics
+- Business Intelligence
+- Git & GitHub
+- Problem Solving
 
-See the route list at the top of `app.py` for the full API surface:
-auth, farms, crops, harvests, and expense/income records — all scoped
-so a farmer only sees their own farms, while `agronomist`/`admin`
-accounts can see everything.
+---
 
-## Connecting the front end
+## 👨‍💻 Author
 
-In `agrovision.html`, point the login/register/dashboard forms at
-`http://localhost:5000/api/...` and store the returned token
-(e.g. in a JS variable held in app state — **not** localStorage, since
-that's disabled in the Claude artifact sandbox). I can wire this up
-directly next if you'd like.
+**Emilio Odongo**
 
-## Moving to production Postgres (Aiven)
+Aspiring Data Engineer | Data Analyst | AgriTech Enthusiast
 
-The data model in `database.py` mirrors `schema.sql` table-for-table.
-To switch:
+### Connect with me
 
-1. Create the tables on your Aiven Postgres instance:
-   ```bash
-   psql "$AIVEN_DATABASE_URL" -f schema.sql
-   ```
-2. Replace the `sqlite3` calls in `database.py` with `psycopg2`
-   (`pip install psycopg2-binary`), reading the connection string from
-   an environment variable (`DATABASE_URL`) rather than hardcoding it.
-3. `?` placeholders become `%s` in psycopg2; `lastrowid` becomes
-   `RETURNING id` in your `INSERT` statements. Everything else in
-   `app.py` — routes, auth, ownership checks — stays the same.
-4. Move `SECRET_KEY` in `app.py` into an environment variable before
-   deploying (to Render or Railway, per your stack).
+- LinkedIn: *www.linkedin.com/in/emilio-ochieng-3b11b73ab*
+- GitHub: https://github.com/emilioochieng
+- Email: *(emilioochieng44@gmail.com*
 
-## Not in this phase yet
+---
 
-Worker management and field-image uploads (listed under Farm
-Management in the original brief) — natural additions once Phase 3's
-dashboard is wired to real data.
+## 📜 License
+
+This project is licensed under the MIT License.
+
+---
+
+## ⭐ Support
+
+If you find this project helpful, consider giving it a ⭐ on GitHub.
+
+Your support motivates continuous improvement and future development.
+
+---
+
+## 💡 Vision Statement
+
+> *"To transform agriculture through data, technology, and innovation, empowering farmers to make smarter decisions and build a more sustainable future."*
